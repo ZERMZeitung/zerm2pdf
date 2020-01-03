@@ -1,0 +1,94 @@
+#!/bin/bash
+
+if [ $# -lt 2 ] ; then
+        echo 'Usage: zerm2pdf [config_file] [zerm.eu-directory]'
+        exit 1
+fi
+
+if [ ! -f "$1" ] ; then
+        echo 'Config file does not exist.'
+        exit 2
+fi
+
+if [ ! -d "$2" ] ; then
+        echo 'zerm.eu directory does not exist.'
+        exit 3
+fi
+
+source "$1"
+
+articles=""
+
+for id in $ids ; do
+        articles="$articles $(sed "s/<html><head><meta http-equiv='refresh' content='0; URL=https:\\/\\/zerm\\.eu\\/zerm\\///" "$2/zm/$id.html" | sed "s/'><script>window\\.location\\.href = 'https:\\/\\/zerm\\.eu\\/zerm\\/.\\+\\.html'<\\/script><\\/head><body>Sie sollten <a href='https:\\/\\/zerm.eu\\/zerm\\/.\\+\\.html'>hierhin<\\/a> weitergeleitet werden.<\\/body><\\/html>//")"
+done
+
+articles="$(echo "$articles" | sed 's/^ //')"
+
+#\DeclareUnicodeCharacter{041C}{'\rca'} М
+#\DeclareUnicodeCharacter{0438}{'\rcb'} и
+#\DeclareUnicodeCharacter{0445}{'\rcc'} х
+#\DeclareUnicodeCharacter{0430}{'\rcd'} а
+#\DeclareUnicodeCharacter{043B}{'\rce'} л
+#\DeclareUnicodeCharacter{0421}{'\rcf'} С
+#\DeclareUnicodeCharacter{0435}{'\rcg'} е
+#\DeclareUnicodeCharacter{0440}{'\rch'} р
+#\DeclareUnicodeCharacter{0433}{'\rci'} г
+#\DeclareUnicodeCharacter{0432}{'\rcj'} в
+#\DeclareUnicodeCharacter{0447}{'\rck'} ч
+#\DeclareUnicodeCharacter{0413}{'\rcl'} Г
+#\DeclareUnicodeCharacter{043E}{'\rcm'} о
+#\DeclareUnicodeCharacter{0431}{'\rcn'} б
+#\DeclareUnicodeCharacter{0451}{'\rco'} ё
+
+#cat > /tmp/zerm2pdf.md << EOF
+#\\DeclareUnicodeCharacter{041C}{'\\rca'}
+#\\DeclareUnicodeCharacter{0438}{'\\rcb'}
+#\\DeclareUnicodeCharacter{0445}{'\\rcc'}
+#\\DeclareUnicodeCharacter{0430}{'\\rcd'}
+#\\DeclareUnicodeCharacter{043B}{'\\rce'}
+#\\DeclareUnicodeCharacter{0421}{'\\rcf'}
+#\\DeclareUnicodeCharacter{0435}{'\\rcg'}
+#\\DeclareUnicodeCharacter{0440}{'\\rch'}
+#\\DeclareUnicodeCharacter{0433}{'\\rci'}
+#\\DeclareUnicodeCharacter{0432}{'\\rcj'}
+#\\DeclareUnicodeCharacter{0447}{'\\rck'}
+#\\DeclareUnicodeCharacter{0413}{'\\rcl'}
+#\\DeclareUnicodeCharacter{043E}{'\\rcm'}
+#\\DeclareUnicodeCharacter{0431}{'\\rcn'}
+#\\DeclareUnicodeCharacter{0451}{'\\rco'}
+#EOF
+
+echo "![the front page]($fpg)" > /tmp/zerm2pdf.md
+
+for a in $articles ; do
+        sed 's/<\/\?html>//' "$2/zerm/$a" | \
+                sed 's/<\/\?head>//' | \
+                sed 's/<\/\?body>//' | \
+                sed 's/^.*twitter.*tweet.*text.*zerm\.link.*$//' | \
+                sed "s/<a href='\\.\\.\\/index\\.html'>zurück<\\/a>//" | \
+                sed 's/<title>.*<\/title>//' | \
+                sed 's/<link .*>//' | \
+                sed "s/<meta charset='utf-8'\\/>//" | \
+                sed 's/<\/\?footer>//g' | \
+                sed 's/<br\/>/\n/g' | \
+                sed 's/<\/\?p>/\n/g' | \
+                perl -pe 's|<h1>(.*?)</h1>|# \1|g' | \
+                perl -pe 's|<h2>(.*?)</h2>|## \1|g' | \
+                perl -pe 's|<h3>(.*?)</h3>|### \1|g' | \
+                perl -pe 's|<h4>(.*?)</h4>|#### \1|g' | \
+                perl -pe 's|<h5>(.*?)</h5>|##### \1|g' | \
+                perl -pe 's|<h6>(.*?)</h6>|###### \1|g' | \
+                sed 's/<\/\?i>/_/g' | \
+                sed 's/<\/\?strong>/**/g' | \
+                sed 's/<\/\?code>//g' | \
+                sed 's/<\/\?ul>//g' | \
+                sed 's/<\/li>//g' | \
+                sed 's/<li>/\n* /g' | \
+                perl -pe 's|<sup>.*?</sup>||g' | \
+                perl -pe 's|<a href=["'\''](.*?)["'\'']>(.*?)</a>|[\2](\1)|g' | \
+#                sed 's/Михаил Сергеевич Горбачёв/\\rca\\rcb\\rcc\\rcd\\rcb\\rce \\rcf\\rcg\\rch\\rci\\rcg\\rcg\\rcj\\rcb\\rck \\rcl\\rcm\\rch\\rcn\\rcd\\rck\\rco\\rcj/g'
+                sed 's/Михаил Сергеевич Горбачёв/(Kyrillische Buchstaben werden in der Gesamtausgabe noch nicht unterstützt)/g'
+done | cat -s >> /tmp/zerm2pdf.md               # sed 's/[\r\n]\+/\n/g'
+
+pandoc /tmp/zerm2pdf.md -t latex -o $pdf
