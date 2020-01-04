@@ -1,11 +1,11 @@
 #!/bin/bash
 
 if [ $# -lt 2 ] ; then
-        echo 'Usage: zerm2pdf [config_file] [zerm.eu-directory]'
+        echo 'Usage: zerm2pdf [year] [zerm.eu-directory]'
         exit 1
 fi
 
-if [ ! -f "$1" ] ; then
+if [ ! -f "cfgs/$1.z2p" ] ; then
         echo 'Config file does not exist.'
         exit 2
 fi
@@ -15,7 +15,7 @@ if [ ! -d "$2" ] ; then
         exit 3
 fi
 
-source "$1"
+source "cfgs/$1.z2p"
 
 articles=""
 
@@ -59,7 +59,7 @@ articles="$(echo "$articles" | sed 's/^ //')"
 #\\DeclareUnicodeCharacter{0451}{'\\rco'}
 #EOF
 
-echo "![the front page]($fpg)" > /tmp/zerm2pdf.md
+echo "![the front page](fpgs/$1.png)" > /tmp/zerm2pdf.md
 
 for a in $articles ; do
         sed 's/<\/\?html>//' "$2/zerm/$a" | \
@@ -89,6 +89,6 @@ for a in $articles ; do
                 perl -pe 's|<a href=["'\''](.*?)["'\'']>(.*?)</a>|[\2](\1)|g' | \
 #                sed 's/Михаил Сергеевич Горбачёв/\\rca\\rcb\\rcc\\rcd\\rcb\\rce \\rcf\\rcg\\rch\\rci\\rcg\\rcg\\rcj\\rcb\\rck \\rcl\\rcm\\rch\\rcn\\rcd\\rck\\rco\\rcj/g'
                 sed 's/Михаил Сергеевич Горбачёв/(Kyrillische Buchstaben werden in der Gesamtausgabe noch nicht unterstützt)/g'
-done | cat -s >> /tmp/zerm2pdf.md               # sed 's/[\r\n]\+/\n/g'
+done | cat -s >> /tmp/zerm2pdf.md              # sed 's/[\r\n]\+/\n/g'
 
-pandoc /tmp/zerm2pdf.md -t latex -o $pdf
+pandoc /tmp/zerm2pdf.md -t latex -o "pdfs/$1.pdf"
