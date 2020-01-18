@@ -25,41 +25,8 @@ done
 
 articles="$(echo "$articles" | sed 's/^ //')"
 
-#\DeclareUnicodeCharacter{041C}{'\rca'} М
-#\DeclareUnicodeCharacter{0438}{'\rcb'} и
-#\DeclareUnicodeCharacter{0445}{'\rcc'} х
-#\DeclareUnicodeCharacter{0430}{'\rcd'} а
-#\DeclareUnicodeCharacter{043B}{'\rce'} л
-#\DeclareUnicodeCharacter{0421}{'\rcf'} С
-#\DeclareUnicodeCharacter{0435}{'\rcg'} е
-#\DeclareUnicodeCharacter{0440}{'\rch'} р
-#\DeclareUnicodeCharacter{0433}{'\rci'} г
-#\DeclareUnicodeCharacter{0432}{'\rcj'} в
-#\DeclareUnicodeCharacter{0447}{'\rck'} ч
-#\DeclareUnicodeCharacter{0413}{'\rcl'} Г
-#\DeclareUnicodeCharacter{043E}{'\rcm'} о
-#\DeclareUnicodeCharacter{0431}{'\rcn'} б
-#\DeclareUnicodeCharacter{0451}{'\rco'} ё
-
-#cat > /tmp/zerm2pdf.md << EOF
-#\\DeclareUnicodeCharacter{041C}{'\\rca'}
-#\\DeclareUnicodeCharacter{0438}{'\\rcb'}
-#\\DeclareUnicodeCharacter{0445}{'\\rcc'}
-#\\DeclareUnicodeCharacter{0430}{'\\rcd'}
-#\\DeclareUnicodeCharacter{043B}{'\\rce'}
-#\\DeclareUnicodeCharacter{0421}{'\\rcf'}
-#\\DeclareUnicodeCharacter{0435}{'\\rcg'}
-#\\DeclareUnicodeCharacter{0440}{'\\rch'}
-#\\DeclareUnicodeCharacter{0433}{'\\rci'}
-#\\DeclareUnicodeCharacter{0432}{'\\rcj'}
-#\\DeclareUnicodeCharacter{0447}{'\\rck'}
-#\\DeclareUnicodeCharacter{0413}{'\\rcl'}
-#\\DeclareUnicodeCharacter{043E}{'\\rcm'}
-#\\DeclareUnicodeCharacter{0431}{'\\rcn'}
-#\\DeclareUnicodeCharacter{0451}{'\\rco'}
-#EOF
-
-echo "![the front page](fpgs/$1.png)" > /tmp/zerm2pdf.md
+#inkscape -z -e "/tmp/$1.png" "fpgs/$1.svg" > /dev/null
+#echo "![the front page](/tmp/$1.png)" > /tmp/zerm2pdf.md
 
 for a in $articles ; do
         sed 's/<\/\?html>//' "$2/zerm/$a" | \
@@ -87,8 +54,7 @@ for a in $articles ; do
                 sed 's/<li>/\n* /g' | \
                 perl -pe 's|<sup>.*?</sup>||g' | \
                 perl -pe 's|<a href=["'\''](.*?)["'\'']>(.*?)</a>|[\2](\1)|g' | \
-#                sed 's/Михаил Сергеевич Горбачёв/\\rca\\rcb\\rcc\\rcd\\rcb\\rce \\rcf\\rcg\\rch\\rci\\rcg\\rcg\\rcj\\rcb\\rck \\rcl\\rcm\\rch\\rcn\\rcd\\rck\\rco\\rcj/g'
                 sed 's/Михаил Сергеевич Горбачёв/(Kyrillische Buchstaben werden in der Gesamtausgabe noch nicht unterstützt)/g'
-done | cat -s >> /tmp/zerm2pdf.md              # sed 's/[\r\n]\+/\n/g'
+done | cat -s > /tmp/zerm2pdf.md
 
-pandoc /tmp/zerm2pdf.md -t latex -o "pdfs/$1.pdf"
+pandoc /tmp/zerm2pdf.md -t latex -o "$2/$1.pdf"
