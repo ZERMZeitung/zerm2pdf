@@ -15,25 +15,24 @@ if [ ! -d "$2" ] ; then
         exit 3
 fi
 
+which sed perl cat >/dev/null || exit 4
+
 source "cfgs/$1.z2p"
 
 articles=""
 
 for id in $ids ; do
-        articles="$articles $(sed "s/<html><head><meta http-equiv='refresh' content='0; URL=https:\\/\\/zerm\\.eu\\/zerm\\///" "$2/zm/$id.html" | sed "s/'><script>window\\.location\\.href = 'https:\\/\\/zerm\\.eu\\/zerm\\/.\\+\\.html'<\\/script><\\/head><body>Sie sollten <a href='https:\\/\\/zerm.eu\\/zerm\\/.\\+\\.html'>hierhin<\\/a> weitergeleitet werden.<\\/body><\\/html>//")"
+        articles="$articles $(grep "^$id," $2/zm/short.csv | cut -d, -f2)"
 done
 
 articles="$(echo "$articles" | sed 's/^ //')"
-
-#inkscape -z -e "/tmp/$1.png" "fpgs/$1.svg" > /dev/null
-#echo "![the front page](/tmp/$1.png)" > /tmp/zerm2pdf.md
 
 for a in $articles ; do
         sed 's/<\/\?html>//' "$2/zerm/$a" | \
                 sed 's/<\/\?head>//' | \
                 sed 's/<\/\?body>//' | \
                 sed 's/^.*twitter.*tweet.*text.*zerm\.link.*$//' | \
-                sed "s/<a href='\\.\\.\\/index\\.html'>zurück<\\/a>//" | \
+                sed 's/<a href=.\.\.\/index\.html.>zurück<\/a>//' | \
                 sed 's/<title>.*<\/title>//' | \
                 sed 's/<link .*>//' | \
                 sed "s/<meta charset='utf-8'\\/>//" | \
@@ -53,8 +52,8 @@ for a in $articles ; do
                 sed 's/<\/li>//g' | \
                 sed 's/<li>/\n* /g' | \
                 perl -pe 's|<sup>.*?</sup>||g' | \
-                perl -pe 's|<a href=["'\''](.*?)["'\'']>(.*?)</a>|[\2](\1)|g' | \
-                sed 's/Михаил Сергеевич Горбачёв/(Kyrillische Buchstaben werden in der Gesamtausgabe noch nicht unterstützt)/g'
+                perl -pe 's|<a href=.(.*?).>(.*?)</a>|[\2](\1)|g' | \
+                sed 's/Михаил Сергеевич Горбачёв/(Kyrillische Buchstaben werden in der Gesamtausgabe noch nicht unterstützt)/g' # special case only for ga 2019
 done | cat -s > /tmp/zerm2pdf.md
 
 pandoc /tmp/zerm2pdf.md -t latex -o "$2/$1.pdf"
