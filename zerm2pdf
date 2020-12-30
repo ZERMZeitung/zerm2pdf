@@ -15,7 +15,7 @@ if [ ! -d "$2" ] ; then
         exit 3
 fi
 
-which sed perl cat >/dev/null || exit 4
+which sed perl cat pandoc >/dev/null || exit 4
 
 source "cfgs/$1.z2p"
 
