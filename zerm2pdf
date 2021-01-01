@@ -29,31 +29,32 @@ articles="$(echo "$articles" | sed 's/^ //')"
 
 for a in $articles ; do
         sed 's/<\/\?html>//' "$2/zerm/$a" | \
-                sed 's/<\/\?head>//' | \
-                sed 's/<\/\?body>//' | \
-                sed 's/^.*twitter.*tweet.*text.*zerm\.link.*$//' | \
-                sed 's/<a href=.\.\.\/index\.html.>zurück<\/a>//' | \
-                sed 's/<title>.*<\/title>//' | \
-                sed 's/<link .*>//' | \
-                sed "s/<meta charset='utf-8'\\/>//" | \
-                sed 's/<\/\?footer>//g' | \
-                sed 's/<br\/>/\n/g' | \
-                sed 's/<\/\?p>/\n/g' | \
-                perl -pe 's|<h1>(.*?)</h1>|# \1|g' | \
-                perl -pe 's|<h2>(.*?)</h2>|## \1|g' | \
-                perl -pe 's|<h3>(.*?)</h3>|### \1|g' | \
-                perl -pe 's|<h4>(.*?)</h4>|#### \1|g' | \
-                perl -pe 's|<h5>(.*?)</h5>|##### \1|g' | \
-                perl -pe 's|<h6>(.*?)</h6>|###### \1|g' | \
-                sed 's/<\/\?i>/_/g' | \
-                sed 's/<\/\?strong>/**/g' | \
-                sed 's/<\/\?code>//g' | \
-                sed 's/<\/\?ul>//g' | \
-                sed 's/<\/li>//g' | \
-                sed 's/<li>/\n* /g' | \
-                perl -pe 's|<sup>.*?</sup>||g' | \
-                perl -pe 's|<a href=.(.*?).>(.*?)</a>|[\2](\1)|g' | \
-                sed 's/Михаил Сергеевич Горбачёв/(Kyrillische Buchstaben werden in der Gesamtausgabe noch nicht unterstützt)/g' # special case only for ga 2019
+        sed 's/<\/\?head>//' | \
+        sed 's/<\/\?body>//' | \
+        sed 's/^.*twitter.*tweet.*text.*zerm\.link.*$//' | \
+        sed 's/<a href=.\.\.\/index\.html.>zurück<\/a>//' | \
+        sed 's/<title>.*<\/title>//' | \
+        sed 's/<link .*>//' | \
+        sed "s/<meta charset='utf-8'\\/>//" | \
+        sed 's/<\/\?footer>//g' | \
+        sed 's/<br\/>/\n/g' | \
+        sed 's/<\/\?p>/\n/g' | \
+        perl -pe 's|<h1>(.*?)</h1>|# \1|g' | \
+        perl -pe 's|<h2>(.*?)</h2>|## \1|g' | \
+        perl -pe 's|<h3>(.*?)</h3>|### \1|g' | \
+        perl -pe 's|<h4>(.*?)</h4>|#### \1|g' | \
+        perl -pe 's|<h5>(.*?)</h5>|##### \1|g' | \
+        perl -pe 's|<h6>(.*?)</h6>|###### \1|g' | \
+        sed 's/<\/\?i>/_/g' | \
+        sed 's/<\/\?strong>/**/g' | \
+        sed 's/<\/\?code>//g' | \
+        sed 's/<\/\?ul>//g' | \
+        sed 's/<\/li>//g' | \
+        sed 's/<li>/\n* /g' | \
+        perl -pe 's|<sup>.*?</sup>||g' | \
+        perl -pe 's|<a href=.(.*?).>(.*?)</a>|[\2](\1)|g' | \
+        sed 's/Михаил Сергеевич Горбачёв/(Kyrillische Buchstaben werden in der Gesamtausgabe noch nicht unterstützt)/g' | \ # special case only for ga 2019
+        sed 's/🥰/[...]/g' # special case for ga 2020
 done | cat -s > /tmp/zerm2pdf.md
 
 pandoc /tmp/zerm2pdf.md -t latex -o "$2/$1.pdf"
