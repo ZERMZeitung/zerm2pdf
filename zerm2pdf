@@ -53,8 +53,8 @@ for a in $articles ; do
         sed 's/<li>/\n* /g' | \
         perl -pe 's|<sup>.*?</sup>||g' | \
         perl -pe 's|<a href=.(.*?).>(.*?)</a>|[\2](\1)|g' | \
-        sed 's/Михаил Сергеевич Горбачёв/(Kyrillische Buchstaben werden in der Gesamtausgabe noch nicht unterstützt)/g' | \ # special case only for ga 2019
-        sed 's/🥰/[...]/g' # special case for ga 2020
+        sed 's/Михаил Сергеевич Горбачёв/(Kyrillische Buchstaben werden in der Gesamtausgabe noch nicht unterstützt)/g' | \
+        sed 's/🥰/[...]/g'
 done | cat -s > /tmp/zerm2pdf.md
 
 pandoc /tmp/zerm2pdf.md -t latex -o "$2/$1.pdf"
