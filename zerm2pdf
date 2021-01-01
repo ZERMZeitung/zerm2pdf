@@ -22,7 +22,7 @@ source "cfgs/$1.z2p"
 articles=""
 
 for id in $ids ; do
-        articles="$articles $(grep "^$id," $2/zm/short.csv | cut -d, -f2)"
+        articles="$articles $(grep "^$id," $2/zm/short.csv | cut -d, -f2 | sed 's/^https:\/\/zerm.eu\/zerm\///')"
 done
 
 articles="$(echo "$articles" | sed 's/^ //')"
