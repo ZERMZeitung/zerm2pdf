@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ $# -ne 1 ] ; then
         echo 'Usage: zerm2pdf [year]'
@@ -17,7 +17,7 @@ fi
 
 which sed cat pandoc >/dev/null || exit 4
 
-source "cfgs/$1.z2p" || exit 5
+ids="$(cat cfgs/$1.z2p)"
 
 articles=""
 
