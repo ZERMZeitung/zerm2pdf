@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ $# -lt 2 ] ; then
-        echo 'Usage: zerm2pdf [year] [zerm.eu-directory]'
+if [ $# -ne 1 ] ; then
+        echo 'Usage: zerm2pdf [year]'
         exit 1
 fi
 
@@ -10,52 +10,23 @@ if [ ! -f "cfgs/$1.z2p" ] ; then
         exit 2
 fi
 
-if [ ! -d "$2" ] ; then
+if [ ! -d ../zerm.eu ] ; then
         echo 'zerm.eu directory does not exist.'
         exit 3
 fi
 
-which sed perl cat pandoc >/dev/null || exit 4
+which sed cat pandoc >/dev/null || exit 4
 
-source "cfgs/$1.z2p"
+source "cfgs/$1.z2p" || exit 5
 
 articles=""
 
 for id in $ids ; do
-        articles="$articles $(grep "^$id," $2/zm/short.csv | cut -d, -f2 | sed 's/^https:\/\/zerm.eu\/zerm\///')"
+        articles="$articles $(grep ",$id$" ../zerm.eu/articles.csv | cut -d, -f2)"
 done
 
-articles="$(echo "$articles" | sed 's/^ //')"
-
 for a in $articles ; do
-        sed 's/<\/\?html>//' "$2/zerm/$a" | \
-        sed 's/<\/\?head>//' | \
-        sed 's/<\/\?body>//' | \
-        sed 's/^.*twitter.*tweet.*text.*zerm\.link.*$//' | \
-        sed 's/<a href=.\.\.\/index\.html.>zurück<\/a>//' | \
-        sed 's/<title>.*<\/title>//' | \
-        sed 's/<link .*>//' | \
-        sed "s/<meta charset='utf-8'\\/>//" | \
-        sed 's/<\/\?footer>//g' | \
-        sed 's/<br\/>/\n/g' | \
-        sed 's/<\/\?p>/\n/g' | \
-        perl -pe 's|<h1>(.*?)</h1>|# \1|g' | \
-        perl -pe 's|<h2>(.*?)</h2>|## \1|g' | \
-        perl -pe 's|<h3>(.*?)</h3>|### \1|g' | \
-        perl -pe 's|<h4>(.*?)</h4>|#### \1|g' | \
-        perl -pe 's|<h5>(.*?)</h5>|##### \1|g' | \
-        perl -pe 's|<h6>(.*?)</h6>|###### \1|g' | \
-        sed 's/<\/\?i>/_/g' | \
-        sed 's/<\/\?strong>/**/g' | \
-        sed 's/<\/\?code>//g' | \
-        sed 's/<\/\?ul>//g' | \
-        sed 's/<\/li>//g' | \
-        sed 's/<li>/\n* /g' | \
-        perl -pe 's|<sup>.*?</sup>||g' | \
-        perl -pe 's|<a href=.(.*?).>(.*?)</a>|[\2](\1)|g' | \
+        sed 's/🥰/[...]/g' "../zerm.eu/zerm/$a.md" | \
         sed 's/Михаил Сергеевич Горбачёв/(Kyrillische Buchstaben werden in der Gesamtausgabe noch nicht unterstützt)/g' | \
-        sed 's/🥰/[...]/g' | \
         sed 's/≠/!=/g'
-done | cat -s > /tmp/zerm2pdf.md
-
-pandoc /tmp/zerm2pdf.md -t latex -o "$2/$1.pdf"
+done | cat -s | pandoc -o "../zerm.eu/$1.pdf"
